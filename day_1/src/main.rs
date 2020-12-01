@@ -20,10 +20,10 @@ fn main() -> Result<(), Error> {
 fn part_2() {
     // find the first set of indices that add to 2020
     let vec = read_file().expect("failed to read file");
-    'outer: for ix in 0..vec.len()-1 {
-        for iy in 1..vec.len() {
+    'outer: for ix in 0..vec.len()-2 {
+        for iy in ix+1..vec.len()-1 {
             if vec[ix]+vec[iy] <= 2020 {
-                for iz in 1..vec.len() {
+                for iz in iy+1..vec.len() {
                     if vec[ix]+vec[iy]+vec[iz] == 2020 {                        
                         println!("{} + {} + {} = {}", vec[ix], vec[iy], vec[iz], vec[ix]+vec[iy]+vec[iz]); 
                         println!("{} * {} * {} = {}", vec[ix], vec[iy], vec[iz], vec[ix]*vec[iy]*vec[iz]); 
@@ -39,7 +39,7 @@ fn part_1() {
     // find the first set of indices that add to 2020
     let vec = read_file().expect("failed to read file");
     'outer: for ix in 0..vec.len()-1 {
-        for iy in 1..vec.len() {
+        for iy in ix+1..vec.len() {
             if vec[ix]+vec[iy] == 2020 {
                 println!("{} + {} = {}", vec[ix], vec[iy], vec[ix]+vec[iy]); 
                 println!("{} * {} = {}", vec[ix], vec[iy], vec[ix]*vec[iy]); 
