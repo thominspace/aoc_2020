@@ -277,6 +277,7 @@ fn validate_passport(keys_to_check: &[&str], hashmap_to_check: &HashMap<&str, Pa
                             };
                         },
                         _ => return false
+                        
                     }
                 } else { return false };
             },
