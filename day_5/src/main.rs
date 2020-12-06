@@ -27,14 +27,6 @@ fn main() -> Result<(), Error> {
 
 fn part_1(file_data: &String) {
 
-    // we want to largest ID
-    // sure, we could convert all of the strings to binary (because that's basically what they are)
-    // but we are searching here not converting
-    // might as well write the converter anyway
-
-    // the largest ID will always be the one with the most F values in a row
-    // assume each line is exactly 9 characters including \n
-
     // replace everything with 1 and 0;
     let replaced_data = file_data.replace("B", "1").replace("F", "0").replace("R", "1").replace("L", "0");
     // convert to an int
