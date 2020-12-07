@@ -61,9 +61,8 @@ fn part_1(file_data: &String) {
     for line in splits {
         // this is the part where I go "I should probably just learn some fucking regex"        
         let re_full = Regex::new(r"^(\S+)\s(\S+) bags contain (.*).").unwrap(); // note had to use an r string here which im assuming is a literal or something
-        // let re_rules = Regex::new(r"^(\S+)\s(\S+) bags").unwrap(); // note had to use an r string here which im assuming is a literal or something
         
-        println!("{}", line);
+        // println!("{}", line);
 
         let cap = re_full.captures(line).unwrap();
         // println!("type: {} color: {} rules: {}", &cap[1], &cap[2], &cap[3]);
@@ -71,9 +70,6 @@ fn part_1(file_data: &String) {
             BagType: String::from(cap.get(1).map_or("", |m| m.as_str())),
             BagColor: String::from(cap.get(2).map_or("", |m| m.as_str())) };
         // add it to the map
-        // bag_rulez.insert(Bag { // split out for clarity, this one's about being easy to read not short
-        //     BagType: String::from(&cap[1]),
-        //     BagColor: String::from(&cap[2]) }, Vec::new());
         bag_rulez.insert(this_bag.clone(), Vec::new());
         match &cap[3] {
             "no other bags" => (),
@@ -96,61 +92,114 @@ fn part_1(file_data: &String) {
             }
         }
         // we should now have processed an entire line.
-        println!("{:?}", bag_rulez.get(&this_bag).unwrap());
+        // println!("{:?}", bag_rulez.get(&this_bag).unwrap());
 
     }
     // we should now have processed ALL lines
-    println!("{:?}", bag_rulez);
+    // println!("{:?}", bag_rulez);
 
     // now, we can solve the puzzle
     let iter_limit = bag_rulez.len();
-    println!("iter limit: {}", iter_limit);
+    // println!("iter limit: {}", iter_limit);
 
     let target_bag = Bag{BagType: String::from("shiny"), BagColor: String::from("gold")};
     let mut total_valid_bags = 0;
     let mut current_bag_num = 0;
 
-    for (bag, rule) in &bag_rulez { // check all our unique bag rules
-        println!("************* NOW SEARCHING BAG NUMBER {} OF {} {:?} *************", current_bag_num, bag_rulez.len()-1, bag);
-        if bag == &target_bag { //it's the key, we're good
-            println!("found a bag (it's the key)");
-            // total_valid_bags += 1;
-        }
-        else {
-
-            // let mut bag_found = false;
-            let mut iter_count: usize = 0;
-            'check_loop: for (_this_num, this_subbag) in rule { // why not match here? Well, it's in case we have empty bag vectors. That and we need to dive
-                // println!("---- WOOP {:?}", this_subbag);
-                if check_nested_bag(&bag_rulez, &this_subbag, &target_bag, &mut iter_count, &iter_limit){
-                    println!("----  ---- Got it!");
-                    total_valid_bags += 1;
-                    break 'check_loop;
-                }
+    for (_bag, rule) in &bag_rulez { // check all our unique bag rules
+        // println!("************* NOW SEARCHING BAG NUMBER {} OF {} {:?} *************", current_bag_num, bag_rulez.len()-1, bag);
+        let mut iter_count: usize = 0;
+        'check_loop: for (_this_num, this_subbag) in rule { // why not match here? Well, it's in case we have empty bag vectors. That and we need to dive
+            // println!("---- WOOP {:?}", this_subbag);
+            if check_nested_bag(&bag_rulez, &this_subbag, &target_bag, &mut iter_count, &iter_limit){
+                // println!("----  ---- Got it!");
+                total_valid_bags += 1;
+                break 'check_loop;
             }
         }
         current_bag_num += 1;
-        
     }
     println!("total valid bags: {}", total_valid_bags)
 }
 
 fn check_nested_bag(bag_rules: &HashMap<Bag, Vec<(usize, Bag)>>, this_bag: &Bag, target_bag: &Bag, iter_count: &mut usize, iter_limit: &usize) -> bool {
     if this_bag == target_bag {
-        println!("---- found it in a subbag!");
+        // println!("---- found it in a subbag!");
         return true;
     }
-    // else if *iter_count < *iter_limit {
-        *iter_count += 1;
-        let ref sub_bags: Vec<(usize, Bag)> = *bag_rules.get(&this_bag).unwrap();
-        for (_this_num, this_subbag) in sub_bags {
-            // println!("---- Searching in {:?} on iter {}", this_subbag, iter_count);
-            if check_nested_bag(&bag_rules, &this_subbag, &target_bag, iter_count, iter_limit) {
-                return true;
-            }
+    *iter_count += 1;
+    let ref sub_bags: Vec<(usize, Bag)> = *bag_rules.get(&this_bag).unwrap();
+    for (_this_num, this_subbag) in sub_bags {
+        // println!("---- Searching in {:?} on iter {}", this_subbag, iter_count);
+        if check_nested_bag(&bag_rules, &this_subbag, &target_bag, iter_count, iter_limit) {
+            return true;
         }
-    // }
+    }
     return false;
 }
 
-fn part_2(file_data: &String) {}
+fn part_2(file_data: &String) {
+    let splits: Vec<&str> = file_data.split("\n").collect(); // this will split each line seperately
+
+    let mut bag_rulez: HashMap<Bag, Vec<(usize, Bag)>> = HashMap::new();
+
+    for line in splits {
+        // this is the part where I go "I should probably just learn some fucking regex"        
+        let re_full = Regex::new(r"^(\S+)\s(\S+) bags contain (.*).").unwrap(); // note had to use an r string here which im assuming is a literal or something
+        
+        // println!("{}", line);
+
+        let cap = re_full.captures(line).unwrap();
+        // println!("type: {} color: {} rules: {}", &cap[1], &cap[2], &cap[3]);
+        let this_bag = Bag { // split out for clarity, this one's about being easy to read not short
+            BagType: String::from(cap.get(1).map_or("", |m| m.as_str())),
+            BagColor: String::from(cap.get(2).map_or("", |m| m.as_str())) };
+        // add it to the map
+        bag_rulez.insert(this_bag.clone(), Vec::new());
+        match &cap[3] {
+            "no other bags" => (),
+            _ => {
+                // we have some extra stuff. split on commas and the trailing whitespace (we already regex'd out the period!)
+                let rulez: Vec<&str> = cap[3].split(", ").collect();
+                for rule in rulez { // for each of our rules
+                    // simple regex (i.e. "I dont know how to do it right") would miss bag vs bags. So just split on spaces
+                    let split_rule: Vec<&str>  = rule.split(" ").collect();
+                    // println!("---- number: {} type: {} color: {}", split_rule[0], split_rule[1], split_rule[2]);
+                    let num_bags = split_rule[0].parse::<usize>().unwrap();
+                    let sub_bag = Bag {
+                        BagType: String::from(split_rule[1]),
+                        BagColor: String::from(split_rule[2]) 
+                    };
+                    let x = bag_rulez.get_mut(&this_bag).unwrap();
+                    x.push((num_bags, sub_bag));
+                    // println!("{:?}", this_bag)
+                }
+            }
+        }
+        // we should now have processed an entire line.
+        // println!("{:?}", bag_rulez.get(&this_bag).unwrap());
+
+    }
+    // we should now have processed ALL lines
+    // println!("{:?}", bag_rulez);
+
+    // now, we can solve the puzzle
+
+    let target_bag = Bag{BagType: String::from("shiny"), BagColor: String::from("gold")};
+    let mut total_valid_bags = 0;
+
+    total_valid_bags += count_nested_bag(&bag_rulez, &target_bag);
+
+    println!("total nested bags: {}", total_valid_bags)
+}
+
+fn count_nested_bag(bag_rules: &HashMap<Bag, Vec<(usize, Bag)>>, target_bag: &Bag) -> usize {
+    
+    let mut total_nested_bags: usize = 0;
+    let ref sub_bags: Vec<(usize, Bag)> = *bag_rules.get(&target_bag).unwrap();
+    for (this_num, this_subbag) in sub_bags {
+        // println!("---- Searching in {:?} on iter {}", this_subbag, iter_count);
+        total_nested_bags += this_num * (count_nested_bag(&bag_rules, &this_subbag) + 1);
+    }
+    return total_nested_bags;
+}
