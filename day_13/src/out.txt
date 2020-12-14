@@ -1,0 +1,41 @@
+   Compiling day_13 v0.1.0 (/home/hardsnow/aoc_2020/day_13)
+warning: value assigned to `n_0` is never read
+   --> src/main.rs:180:9
+    |
+180 |         n_0 += n_multi;
+    |         ^^^
+    |
+    = note: `#[warn(unused_assignments)]` on by default
+    = help: maybe it is overwritten before being read?
+
+warning: variable does not need to be mutable
+  --> src/main.rs:37:9
+   |
+37 |     let mut splits: Vec<&str> = file_data.split("\n").collect(); // this will split each line seperately
+   |         ----^^^^^^
+   |         |
+   |         help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: 2 warnings emitted
+
+    Finished dev [unoptimized + debuginfo] target(s) in 0.46s
+     Running `/home/hardsnow/aoc_2020/day_13/target/debug/day_13`
+earliest_bus: 5, bus_id: 59, ans: 295
+Time elapsed in part 1: 33.744µs
+sched: [(59.0, 4.0), (31.0, 6.0), (19.0, 7.0), (13.0, 1.0), (7.0, 0.0)]
+Trying the slow way
+bus_i: 1, 11, last good diff 11
+bus_i: 1, 42, last good diff 31
+Foo!
+bus_i: 2, 445, last good diff 403
+bus_i: 2, 1034, last good diff 589
+Foo!
+bus_i: 3, 2801, last good diff 1767
+bus_i: 3, 10458, last good diff 7657
+Foo!
+bus_i: 4, 18115, last good diff 7657
+Solution found!
+t: 1068781
+Time elapsed in part 2: 4.028939ms
