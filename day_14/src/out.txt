@@ -1,0 +1,56 @@
+   Compiling day_14 v0.1.0 (/home/hardsnow/aoc_2020/day_14)
+warning: unreachable pattern
+   --> src/main.rs:268:17
+    |
+265 |                 (ix, overwrite_char) => {
+    |                 -------------------- matches any value
+...
+268 |                 _ => ()
+    |                 ^ unreachable pattern
+    |
+    = note: `#[warn(unreachable_patterns)]` on by default
+
+warning: unused variable: `mask_ix`
+   --> src/main.rs:148:17
+    |
+148 |             let mut mask_ix = 0;
+    |                 ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_mask_ix`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> src/main.rs:31:9
+   |
+31 |     let mut splits: Vec<&str> = file_data.split("\n").collect(); // this will split each line seperately
+   |         ----^^^^^^
+   |         |
+   |         help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: variable does not need to be mutable
+   --> src/main.rs:134:17
+    |
+134 |             let mut digit_as_bin = format!("{:036b}", digit_as_u64);
+    |                 ----^^^^^^^^^^^^
+    |                 |
+    |                 help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: variable does not need to be mutable
+   --> src/main.rs:148:17
+    |
+148 |             let mut mask_ix = 0;
+    |                 ----^^^^^^^
+    |                 |
+    |                 help: remove this `mut`
+
+warning: 5 warnings emitted
+
+    Finished dev [unoptimized + debuginfo] target(s) in 0.57s
+     Running `/home/hardsnow/aoc_2020/day_14/target/debug/day_14`
+ans: 9879607673316
+Time elapsed in part 1: 4.210538ms
+ans: 3435342392262
+Time elapsed in part 2: 697.250309ms
