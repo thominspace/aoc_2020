@@ -38,7 +38,6 @@ fn part_2(file_data: &String) {
 
     let mut my_ticket: Vec<usize> = Vec::new();
     let mut nearby_tickets: Vec<Vec<usize>> = Vec::new();
-    let mut fields_master: HashMap<String, usize> = HashMap::new();
     let mut fields_elimination: HashMap<String, HashSet<usize>> = HashMap::new();
     let mut rules: HashMap<String, Vec<(usize, usize)>> = HashMap::new();
 
@@ -57,7 +56,7 @@ fn part_2(file_data: &String) {
                 fields_elimination.insert(capture[1].to_string(), HashSet::new());
                 // another example of "i should probably just learn regex"
                 // println!("parsing constraint");
-                println!("{:?}", capture);
+                // println!("{:?}", capture);
                 rules.insert(capture[1].to_string(), vec![(capture[2].parse::<usize>().unwrap(), capture[3].parse::<usize>().unwrap()),
                                                           (capture[4].parse::<usize>().unwrap(), capture[5].parse::<usize>().unwrap())]);
             },
@@ -80,15 +79,19 @@ fn part_2(file_data: &String) {
             // println!("parsing nearby tickets");
             // assume all other lines here are nearby tickets
             // get the next line
-            'nearby_ticket_insert_loop: while let Some(line) = file_line_iter.next() {
-                let mut val_is_valid = false;
+            while let Some(line) = file_line_iter.next() {
                 let mut temp_vec: Vec<usize> = Vec::new();
+                let mut ticket_is_valid = true;
                 // split on commas
                 let words: Vec<&str> = line.split(",").collect();
                 // println!("{:?}", words);
-                for num in words {
+                // for each number in the ticket string
+                'nearby_ticket_insert_loop: for num in words {
+                    let mut val_is_valid = false;
                     let this_num = num.parse::<usize>().unwrap();
-                    // check this number against all the  rules
+                    // check this number against all the rules
+                    // if this value in the ticket matches NONE of the rules, remove the ticket
+                    // otherwise (if it matches at least one rule) add it
                     'check_loop: for (_, rule_bounds) in &rules {
                         for (lower_limit, upper_limit) in rule_bounds {
                             if (this_num >= *lower_limit) && (this_num <= *upper_limit) {
@@ -98,50 +101,34 @@ fn part_2(file_data: &String) {
                             }
                         }
                     }
+                    // if we found a rule that the value follows, add it to the ticket
                     if val_is_valid == true {
                         temp_vec.push(this_num);
-                    } else {
+                    } else { // if the value followed NO rules, skip this ticket without adding it
+                        ticket_is_valid = false;
                         break 'nearby_ticket_insert_loop;
                     }
                 }
                 // we haven't broken out of the check loop at this point, so go ahead and push the vec
-                nearby_tickets.push(temp_vec.clone());
+                if ticket_is_valid {
+                    nearby_tickets.push(temp_vec.clone());
+                }
             }            
         }
     }
 
-    println!("rules {:?}", rules);
-    println!("my ticket {:?}", my_ticket);
-    println!("nearby tickets {:?}", nearby_tickets.len());
-    println!("fields_elimination {:?}", fields_elimination);
+    let mut fields_master: HashMap<usize, HashSet<String>> = HashMap::new();
+    let mut keys_hashset: HashSet<String> = HashSet::new(); // the .into_keys() method is a nightly only thing and is unstable, doing it manually
+    
+    for (key, _) in &rules {
+        keys_hashset.insert(key.clone());
+    }
 
-
-    // // check now for bad rows, and just remove them
-    // for (ix, this_ticket) in nearby_tickets.iter().enumerate() {
-    //     for val in this_ticket {
-    //         let mut val_is_valid = false;
-    //         'check_loop: for (_, rule_bounds) in &rules {
-    //             for (lower_limit, upper_limit) in rule_bounds {
-    //                 if (val >= *lower_limit) && (val <= *upper_limit) {
-    //                     // value is valid, we're good to proceed
-    //                     val_is_valid = true;
-    //                     break 'check_loop;
-    //                 }
-    //             }
-    //         }
-    //         // we've determined that the value isnt in any of the ranges
-    //         // add that number to the error rate
-    //         if val_is_valid == false {
-    //             err_sum += val;
-    //         }
-    //     }        
-    // }
-
-    // I should parse the rules and find the min, max, and all values that are not within the rules, but
-    // I have a feeling part 2 will bite me on that. Instead (and this is slower probably) im going to
-    // just "enforce" the rules across the board
-
-    let mut field_indices_to_solve: HashSet<usize> = (0..fields_elimination.len()).collect();
+    // prime the master keys, which is very memory expensive but the way I decided to do it because
+    // i got sick of fighting rust ownership
+    for ix in 0..rules.len() {
+        fields_master.insert(ix, keys_hashset.clone());
+    }
 
     // check each ticket
     for this_ticket in nearby_tickets {
@@ -158,77 +145,97 @@ fn part_2(file_data: &String) {
                         break 'second_check_loop;
                     }
                 }
-                // we've determined that the value isnt in any of the ranges, which means that this
-                // index can not contain that field
+                // we've check all the bounds. if the value isn't valid here, remove it from
+                // the list
                 if val_is_valid == false {                    
-                    println!("slot {} can not be {}", ticket_field_ix, rule_field_name);
-                    let field_options = fields_elimination.get_mut(rule_field_name).unwrap();
-                    field_options.insert(ticket_field_ix);
+                    // println!("slot {} can not be {}", ticket_field_ix, rule_field_name);
+                    let slot_set = fields_master.get_mut(&ticket_field_ix).unwrap();
+                    slot_set.remove(rule_field_name);
                 }
             }
         }        
     }
 
-    println!("fields_elimination {:?}", &fields_elimination);
-    println!("field_indices_to_solve {:?}", field_indices_to_solve);
+    // // debug checking tickets
+    // for (key, val) in &fields_master {
+    //     println!("fields_master {:?}", (key, val));
+    // }
 
     // we can check the hashsets against each other to determine missing fields
-    let mut key_to_remove = String::from("");
-    let mut ix_to_remove: Option<usize> = None;
-    let mut elim_check = fields_elimination.len();
+    let mut answer_map: HashMap<String, usize> = HashMap::new();
+    // let mut elim_check = fields_master.len();
     
-    'panic_loop: while elim_check > 0 {
-    
-        for (this_key, this_set) in &fields_elimination {
-            println!("{:?}", (this_key, this_set.len()));
-    
-        }
-        // go through the fields that are left unsolved
-        'elim_loop: for (this_key, this_set) in &fields_elimination {
-            println!("{:?}", (elim_check, this_set.len()));
-            // check if there's only one option left
-
-            if this_set.len() == elim_check-1 {
-                
-                println!("range check success");
-                let diff = field_indices_to_solve.difference(&this_set).collect::<Vec<&usize>>();
-                println!("{:?} must be in slot {:?}", this_key, diff[0]);
-
-                // add the answer to the master
-                fields_master.insert(this_key.clone(), *diff[0]);
-                key_to_remove = this_key.clone();
-                ix_to_remove = Some(*diff[0]);
-
-                // remove it from the search space
-                break 'elim_loop
-    
+    for (ix, _) in fields_master.iter().enumerate() {        
+        let mut first_field: Option<usize> = None;
+        let mut second_field: Option<usize> = None;    
+        // let mut first_field: HashSet<String>;
+        // let mut second_field: HashSet<String>;
+        // look for two sets that are different by one
+        for (key, set) in &fields_master {
+            if set.len() == ix {
+                first_field = Some(key.clone());
+            } else if set.len() == ix+1 {
+                second_field = Some(key.clone());
             }
         }
-        // I had some issues with Rust's insistence on safety (problems with borrowing and trying to pop
-        // things out of the HashSet while looping over said HashSet). Had to split this out later to make
-        // if "safer". I think there's a better way to do this mid-loop but im not 100% on it.
-        
-        // remove it from the search space
-        println!("removing {:?}", key_to_remove);
-        println!("fields_elimination {:?}", &fields_elimination);
-        match &fields_elimination.contains_key(&key_to_remove) {
-            true => {
-                &fields_elimination.remove(&key_to_remove).unwrap();
-                field_indices_to_solve.remove(&ix_to_remove.unwrap());
-                
-                key_to_remove = String::from("");
-            },
-            false => {
-                println!("attempted to remove key that wasn't there!");
-                break 'panic_loop;
-            },
+        // check for a field with one value in it (that's a known entity)
+        // all of the match shenanagins are handling Rust safety stuff
+        // and yes, im sure there's a way to do this a lot cleaner but
+        // im not about to dump a week into it
+        match first_field {
+            Some(first_key) => {
+                match second_field {
+                    Some(second_key) => {                        
+                        let diff_left = {
+                            let get_set = fields_master.get(&first_key);
+                            get_set.unwrap()
+                        };                       
+                        let diff_right = {
+                            let get_set = fields_master.get(&second_key);
+                            get_set.unwrap()
+                        };
+                        let diff = diff_right.difference(&diff_left).collect::<Vec<&String>>(); 
+                        // println!("{:?} is in slot {}", diff, second_key);
+                        answer_map.insert(diff[0].clone(), second_key);
+                    }
+                    None => (),
+                }
+            }
+            None => (),
         }
-        println!("fields_elimination {:?}", &fields_elimination);
-        println!("field_indices_to_solve {:?}", field_indices_to_solve);
-        println!("fields_master {:?}", fields_master);
-        elim_check = fields_elimination.len();
     }
-    
+
+    // need to go back and insert the 1 case
+    let mut single_field: Option<usize> = None; 
+    for (key, set) in &fields_master {
+        if set.len() == 1 {
+            single_field = Some(key.clone());
+        }
+    }
+    match single_field {
+        Some(first_key) => {                          
+            let first_ans = {
+                let get_set = fields_master.get(&first_key);
+                get_set.unwrap()
+            };             
+            // println!("{:?} is in slot {}", first_ans.iter().next().unwrap(), first_key);
+            // the cheaty way to get the first element of a set that only has one element
+            answer_map.insert(first_ans.iter().next().unwrap().clone(), first_key);
+        }
+        None => (),
+    }
+
+
+    // println!("answer_map {:?}", answer_map);
+
+    let mut ans_multi: usize = 1;
+
+    for (key, ticket_slot) in answer_map {
+        if key.contains("departure"){
+            ans_multi *= my_ticket[ticket_slot];
+        }
+    }
+    println!("ans_multi {:?}", ans_multi);
 
 }
 
