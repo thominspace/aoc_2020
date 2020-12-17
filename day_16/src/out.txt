@@ -1,0 +1,42 @@
+   Compiling day_16 v0.1.0 (/home/hardsnow/aoc_2020/day_16)
+warning: unnecessary trailing semicolon
+  --> src/main.rs:56:31
+   |
+56 |             Some(capture) => {;
+   |                               ^ help: remove this semicolon
+   |
+   = note: `#[warn(redundant_semicolons)]` on by default
+
+error[E0308]: mismatched types
+   --> src/main.rs:200:62
+    |
+200 |                 let diff = field_indices_to_solve.difference(&this_set).collect::<Vec<&usize>>();
+    |                                                              ^^^^^^^^^ expected struct `HashSet`, found `&HashSet<String>`
+    |
+    = note: expected reference `&HashSet<usize>`
+               found reference `&&HashSet<String>`
+
+error[E0308]: mismatched types
+   --> src/main.rs:204:38
+    |
+204 |                 fields_master.insert(this_key.clone(), *diff[0]);
+    |                                      ^^^^^^^^^^^^^^^^
+    |                                      |
+    |                                      expected struct `String`, found `usize`
+    |                                      help: try using a conversion method: `this_key.to_string()`
+
+error[E0308]: mismatched types
+   --> src/main.rs:205:33
+    |
+205 |                 key_to_remove = this_key.clone();
+    |                                 ^^^^^^^^^^^^^^^^
+    |                                 |
+    |                                 expected struct `String`, found `usize`
+    |                                 help: try using a conversion method: `this_key.to_string()`
+
+error: aborting due to 3 previous errors; 1 warning emitted
+
+For more information about this error, try `rustc --explain E0308`.
+error: could not compile `day_16`
+
+To learn more, run the command again with --verbose.
