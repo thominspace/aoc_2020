@@ -557,12 +557,15 @@ fn part_2(file_data: &String) {
             let mut neighbor_check = 0;
             match my_grid.flat_grid[index] {
                 0 => { // cube is inactive
-                    for this_neighbor in these_neighbors {
+                    'neighbor_check: for this_neighbor in these_neighbors {
                         // check the neighbor for a valid cell (some may not exist)
                         match this_neighbor {
                             Some(neighbor_ix) => {
                                 // we found a valid cell. add the value (beacuse we need some "exactly"s in the rules)
-                                neighbor_check += my_grid.flat_grid[neighbor_ix];                                
+                                neighbor_check += my_grid.flat_grid[neighbor_ix];
+                                if neighbor_check > 3 { // we do have a break condition! all rules require 3 or less
+                                    break 'neighbor_check
+                                }                                
                             },
                             None => (),
                         }
